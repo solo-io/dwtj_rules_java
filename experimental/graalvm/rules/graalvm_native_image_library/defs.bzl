@@ -92,7 +92,6 @@ graalvm_native_image_library = rule(
         ),
         "deps": attr.label_list(
             allow_empty = False,
-            providers = [JavaDependencyInfo],
             mandatory = True,
         ),
         "native_image_options": attr.string_list(

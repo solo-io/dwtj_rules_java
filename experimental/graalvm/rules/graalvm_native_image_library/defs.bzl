@@ -82,7 +82,7 @@ graalvm_native_image_library = rule(
     implementation = _graalvm_native_image_library_impl,
     attrs = {
         "main_class": attr.string(
-            doc = "If this is set, then the created image will use this Java class's main method as the main entry point. (Methods with appropriate parameters and annotated with `@CEntryPoint` will be used as entry points regardless of whether this is or isn't set.)",
+            doc = "If thi is set, then the created image will use this Java class's main method as the main entry point. (Methods with appropriate parameters and annotated with `@CEntryPoint` will be used as entry points regardless of whether this is or isn't set.)",
             mandatory = False,
         ),
         "image_name": attr.string(

@@ -5,6 +5,7 @@ load("//graalvm:common/extract/toolchain_info.bzl", "extract_graalvm_native_imag
 load(
     "//graalvm:common/actions/native_image.bzl",
     "make_class_path_depset",
+    "make_class_path_files",
     "make_native_image_options_args",
     "make_class_path_str",
 )
@@ -27,6 +28,12 @@ def _make_outputs_list(ctx):
         ctx.outputs.graal_isolate_header_output,
         ctx.outputs.graal_isolate_dynamic_header_output,
     ]
+
+def _make_inputs_list(ctx):
+    deps = []
+    if ctx.file.reflection_configuration != None:
+        deps.append(ctx.file.reflection_configuration)
+    return depset(deps, transitive=make_class_path_files(ctx))
 
 def _expand_build_script_template(ctx, build_script):
     toolchain_info = extract_graalvm_native_image_toolchain_info(ctx)
@@ -56,14 +63,14 @@ def _build_native_image_library_and_headers(ctx):
     _expand_build_script_template(ctx, build_script)
     ctx.actions.run(
         executable = build_script,
-        inputs = make_class_path_depset(ctx),
+        inputs = _make_inputs_list(ctx),
         outputs = _make_outputs_list(ctx),
         # NOTE(dwtj): We pass the extra `native-image` options to the script as
         #  arguments rather than adding them as another substitution when the
         #  template is instantated. This is intended to avoid complications
         #  related to Bourne shell tokenization/interpretation.
         tools = [toolchain_info.native_image_exec],
-        arguments = [make_native_image_options_args(ctx), "-H:ReflectionConfigurationFiles={path}".format(path=ctx.file.reflection_configuration.path)],
+        arguments = [make_native_image_options_args(ctx)],
         mnemonic = "GraalVmNativeImageLibrary",
         progress_message = "Building `native-image` library for `{}`".format(ctx.label),
         # NOTE(dwtj): Currently, we `use_default_shell_env` so that the
@@ -116,7 +123,7 @@ graalvm_native_image_library = rule(
             # TODO(dwtj): Consider making this attribute optional.
             mandatory = True,
         ),
-        "reflection_configuration": attr.label(mandatory=True, allow_single_file=True),
+        "reflection_configuration": attr.label(mandatory=False, allow_single_file=True),
     },
     toolchains = [
         "@dwtj_rules_java//graalvm/toolchains/graalvm_native_image_toolchain:toolchain_type",

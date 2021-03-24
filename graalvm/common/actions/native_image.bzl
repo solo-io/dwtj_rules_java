@@ -11,11 +11,14 @@ def _file_to_path(file):
 #  not twice. Maybe just cache the result. But where? I probably can't just use
 #  a script global variable. Does Bazel provide some target-local storage?
 def make_class_path_depset(ctx):
+    return depset([], transitive = make_class_path_files(ctx))
+
+def make_class_path_files(ctx):
     depsets = []
     for dep in ctx.attr.deps:
         dep_info = dep[JavaDependencyInfo]
         depsets.append(dep_info.run_time_class_path_jars)
-    return depset([ctx.file.reflection_configuration], transitive = depsets)
+    return depsets
 
 def make_class_path_args(ctx):
     args = ctx.actions.args()

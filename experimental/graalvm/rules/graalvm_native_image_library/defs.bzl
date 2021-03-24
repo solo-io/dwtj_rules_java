@@ -1,7 +1,6 @@
 '''Defines the `graalvm_native_image_library` rule.
 '''
 
-load("//java:providers/JavaDependencyInfo.bzl", "JavaDependencyInfo")
 load("//graalvm:common/extract/toolchain_info.bzl", "extract_graalvm_native_image_toolchain_info")
 load(
     "//graalvm:common/actions/native_image.bzl",
@@ -64,7 +63,7 @@ def _build_native_image_library_and_headers(ctx):
         #  template is instantated. This is intended to avoid complications
         #  related to Bourne shell tokenization/interpretation.
         tools = [toolchain_info.native_image_exec],
-        arguments = [make_native_image_options_args(ctx)],
+        arguments = [make_native_image_options_args(ctx), "-H:ReflectionConfigurationFiles={path}".format(path=ctx.file.reflection_configuration.path)],
         mnemonic = "GraalVmNativeImageLibrary",
         progress_message = "Building `native-image` library for `{}`".format(ctx.label),
         # NOTE(dwtj): Currently, we `use_default_shell_env` so that the
@@ -117,6 +116,7 @@ graalvm_native_image_library = rule(
             # TODO(dwtj): Consider making this attribute optional.
             mandatory = True,
         ),
+        "reflection_configuration": attr.label(mandatory=True, allow_single_file=True),
     },
     toolchains = [
         "@dwtj_rules_java//graalvm/toolchains/graalvm_native_image_toolchain:toolchain_type",

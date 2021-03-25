@@ -40,4 +40,6 @@ def make_class_path_str(ctx):
 def make_native_image_options_args(ctx):
     args = ctx.actions.args()
     args.add_all(ctx.attr.native_image_options)
+    if ctx.attr.reflection_configuration != None:
+        args.add("-H:ReflectionConfigurationFiles={path}".format(path=ctx.file.reflection_configuration.path))
     return args

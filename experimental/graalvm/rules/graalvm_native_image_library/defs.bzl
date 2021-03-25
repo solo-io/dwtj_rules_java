@@ -61,6 +61,9 @@ def _build_native_image_library_and_headers(ctx):
     toolchain_info = extract_graalvm_native_image_toolchain_info(ctx)
     build_script = ctx.actions.declare_file(_make_build_script_name(ctx))
     _expand_build_script_template(ctx, build_script)
+
+    
+
     ctx.actions.run(
         executable = build_script,
         inputs = _make_inputs_list(ctx),

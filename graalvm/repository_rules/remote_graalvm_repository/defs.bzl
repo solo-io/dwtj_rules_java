@@ -104,7 +104,7 @@ remote_graalvm_repository = repository_rule(
         ),
         "cpu": attr.string(
             mandatory = True,
-            values = ["x64"],
+            values = ["x64","aarch64"],
         ),
     }
 )

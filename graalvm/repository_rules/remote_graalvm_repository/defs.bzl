@@ -45,10 +45,12 @@ def _graalvm_distribution_is_executable_on_host(repository_ctx):
 
 def _download_and_install_graalvm_native_image_installable_jar(repository_ctx):
     JAR_PATH = "native_image_installable.jar"
+    result = repository_ctx.execute(["uname", "-m"])
+    cpu = result.stdout.strip()
     repository_ctx.download(
         output = JAR_PATH,
-        url = repository_ctx.attr.native_image_installable_jar_url,
-        sha256 = repository_ctx.attr.native_image_installable_jar_sha256,
+        url = repository_ctx.attr.native_image_installable_jar_url[cpu],
+        sha256 = repository_ctx.attr.native_image_installable_jar_sha256[cpu],
     )
     if _graalvm_distribution_is_executable_on_host(repository_ctx):
         exec_result = repository_ctx.execute(
@@ -79,19 +81,23 @@ def _remote_graalvm_repository_impl(repository_ctx):
 remote_graalvm_repository = repository_rule(
     implementation = _remote_graalvm_repository_impl,
     attrs = {
-        "url": attr.string(
+        "url": attr.string_dict(
+	    allow_empty = False,
             mandatory = True,
         ),
-        "sha256": attr.string(
+        "sha256": attr.string_dict(
+	    allow_empty = False,
             mandatory = True,
         ),
         "strip_prefix": attr.string(
             mandatory = True,
         ),
-        "native_image_installable_jar_url": attr.string(
+        "native_image_installable_jar_url": attr.string_dict(
+	    allow_empty = False,
             mandatory = True,
         ),
-        "native_image_installable_jar_sha256": attr.string(
+        "native_image_installable_jar_sha256": attr.string_dict(
+	    allow_empty = False,
             mandatory = True,
         ),
         # TODO(dwtj): Maybe figure out how to infer this attribute from context.
@@ -101,10 +107,6 @@ remote_graalvm_repository = repository_rule(
                 "linux",
                 "macos",
             ],
-        ),
-        "cpu": attr.string(
-            mandatory = True,
-            values = ["x64","aarch64"],
         ),
     }
 )

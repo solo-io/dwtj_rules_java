@@ -14,11 +14,14 @@ def make_exec_compatible_with_str(repository_ctx):
     if os_constraint == None:
         fail("Unexpected `os` attribute value: " + repository_ctx.attr.os)
 
+    result = repository_ctx.execute(["uname", "-m"])
+    cpu = result.stdout.strip()
     cpu_constraints_map = {
-        "x64": "@platforms//cpu:x86_64",
+        "x86_64": "@platforms//cpu:x86_64",
         "aarch64": "@platforms//cpu:aarch64",
     }
-    cpu_constraint = cpu_constraints_map[repository_ctx.attr.cpu]
+
+    cpu_constraint = cpu_constraints_map[cpu]
     if cpu_constraint == None:
         fail("Unexpected `cpu` attribute value: " + repository_ctx.attr.cpu)
 
@@ -51,10 +54,12 @@ def _guess_jvm_shared_library_file(repository_ctx):
     return file
 
 def download_openjdk_dist_archive(repository_ctx):
+    result = repository_ctx.execute(["uname", "-m"])
+    cpu = result.stdout.strip()
     repository_ctx.download_and_extract(
         output = "jdk",
-        url = repository_ctx.attr.url,
-        sha256 = repository_ctx.attr.sha256,
+        url = repository_ctx.attr.url[cpu],
+        sha256 = repository_ctx.attr.sha256[cpu],
         stripPrefix = repository_ctx.attr.strip_prefix,
         allow_fail = False,
     )
@@ -182,10 +187,12 @@ def _remote_openjdk_repository_impl(repository_ctx):
 remote_openjdk_repository = repository_rule(
     implementation = _remote_openjdk_repository_impl,
     attrs = {
-        "url": attr.string(
+        "url": attr.string_dict(
+	    allow_empty = False,
             mandatory = True,
         ),
-        "sha256": attr.string(
+        "sha256": attr.string_dict(
+	    allow_empty = False,
             mandatory = True,
         ),
         "strip_prefix": attr.string(
@@ -197,13 +204,6 @@ remote_openjdk_repository = repository_rule(
             values = [
                 "linux",
                 "macos",
-            ],
-        ),
-        "cpu": attr.string(
-            mandatory = True,
-            values = [
-                "x64",
-                "aarch64",
             ],
         ),
     }

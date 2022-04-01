@@ -17,7 +17,7 @@ def make_exec_compatible_with_str(repository_ctx):
     result = repository_ctx.execute(["uname", "-m"])
     cpu = result.stdout.strip()
     cpu_constraints_map = {
-        "amd64": "@platforms//cpu:x86_64",
+        "x86_64": "@platforms//cpu:x86_64",
         "aarch64": "@platforms//cpu:aarch64",
     }
 

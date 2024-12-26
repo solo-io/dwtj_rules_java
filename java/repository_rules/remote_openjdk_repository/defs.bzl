@@ -16,6 +16,9 @@ def make_exec_compatible_with_str(repository_ctx):
 
     result = repository_ctx.execute(["uname", "-m"])
     cpu = result.stdout.strip()
+    if cpu == "arm64":
+        cpu = "aarch64"
+    
     cpu_constraints_map = {
         "x86_64": "@platforms//cpu:x86_64",
         "aarch64": "@platforms//cpu:aarch64",
@@ -56,6 +59,8 @@ def _guess_jvm_shared_library_file(repository_ctx):
 def download_openjdk_dist_archive(repository_ctx):
     result = repository_ctx.execute(["uname", "-m"])
     cpu = result.stdout.strip()
+    if cpu == "arm64":
+        cpu = "aarch64"
     repository_ctx.download_and_extract(
         output = "jdk",
         url = repository_ctx.attr.url[cpu],

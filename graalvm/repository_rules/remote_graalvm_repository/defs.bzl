@@ -47,6 +47,9 @@ def _download_and_install_graalvm_native_image_installable_jar(repository_ctx):
     JAR_PATH = "native_image_installable.jar"
     result = repository_ctx.execute(["uname", "-m"])
     cpu = result.stdout.strip()
+    if cpu == "arm64":
+        cpu = "aarch64"
+    
     repository_ctx.download(
         output = JAR_PATH,
         url = repository_ctx.attr.native_image_installable_jar_url[cpu],
